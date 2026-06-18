@@ -72,7 +72,7 @@ async function buscarDatajud(numero) {
   const data = await res.json();
   const hits = data?.hits?.hits;
   if (!hits || hits.length === 0) {
-    throw new Error('Processo não encontrado. Verifique o número e tente novamente.');
+    throw new Error(`Não encontrado. Resposta: ${JSON.stringify(data).slice(0, 300)}`);
   }
 
   const p = hits[0]._source;
