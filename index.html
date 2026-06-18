@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acompanhamento Processual · André Cavichio Advogados</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --azul:   #1A4F8A;
+    --verde:  #00643C;
+    --azul-lt:#EAF0F8;
+    --cinza:  #F5F6F8;
+    --texto:  #1C2530;
+    --muted:  #6B7A8D;
+    --borda:  #D8DDE5;
+    --branco: #FFFFFF;
+    --erro:   #C0392B;
+  }
+  body { font-family:'Inter',sans-serif; background:var(--cinza); color:var(--texto); min-height:100vh; display:flex; flex-direction:column; }
+
+  header { background:var(--azul); padding:0 24px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+  .logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
+  .logo-mark { width:38px; height:38px; background:var(--verde); border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:18px; color:#fff; }
+  .logo-text { color:#fff; font-size:13px; font-weight:500; line-height:1.3; opacity:.9; }
+  .logo-text strong { display:block; font-size:15px; font-weight:600; opacity:1; }
+  .header-tag { font-size:11px; background:rgba(255,255,255,.15); color:rgba(255,255,255,.85); padding:4px 10px; border-radius:20px; letter-spacing:.5px; text-transform:uppercase; }
+
+  .hero { background:var(--azul); padding:48px 24px 64px; text-align:center; position:relative; overflow:hidden; }
+  .hero::after { content:''; position:absolute; bottom:0; left:0; right:0; height:32px; background:var(--cinza); border-radius:32px 32px 0 0; }
+  .hero h1 { font-family:'Playfair Display',serif; font-size:clamp(22px,5vw,34px); color:#fff; margin-bottom:10px; }
+  .hero p { color:rgba(255,255,255,.75); font-size:15px; max-width:480px; margin:0 auto; }
+
+  .main { flex:1; padding:32px 16px 48px; max-width:680px; margin:0 auto; width:100%; }
+
+  .card { background:var(--branco); border-radius:16px; padding:32px; box-shadow:0 2px 12px rgba(26,79,138,.08); border:1px solid var(--borda); }
+  .card-label { font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--azul); margin-bottom:6px; }
+  .card h2 { font-family:'Playfair Display',serif; font-size:22px; color:var(--texto); margin-bottom:6px; }
+  .card p.sub { font-size:14px; color:var(--muted); margin-bottom:24px; }
+
+  .input-wrap { display:flex; gap:10px; margin-bottom:10px; }
+  .input-wrap input { flex:1; border:1.5px solid var(--borda); border-radius:10px; padding:13px 16px; font-size:15px; font-family:'Inter',sans-serif; color:var(--texto); outline:none; transition:border-color .2s; letter-spacing:.5px; }
+  .input-wrap input:focus { border-color:var(--azul); }
+  .input-wrap input::placeholder { color:#B0BAC9; letter-spacing:0; }
+
+  .btn-buscar { background:var(--azul); color:#fff; border:none; border-radius:10px; padding:13px 22px; font-size:15px; font-weight:600; cursor:pointer; white-space:nowrap; font-family:'Inter',sans-serif; transition:background .2s, transform .1s; display:flex; align-items:center; gap:8px; }
+  .btn-buscar:hover { background:#163f70; }
+  .btn-buscar:active { transform:scale(.98); }
+  .btn-buscar:disabled { background:#8BA8C8; cursor:not-allowed; }
+  .hint { font-size:12px; color:var(--muted); }
+  .hint span { font-weight:500; color:var(--azul); }
+
+  #resultado { margin-top:24px; display:none; }
+
+  .loading-state { text-align:center; padding:32px 0; }
+  .spinner { width:40px; height:40px; border:3px solid var(--borda); border-top-color:var(--azul); border-radius:50%; margin:0 auto 16px; animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-state p { font-size:14px; color:var(--muted); }
+  .loading-step { font-size:13px; color:var(--azul); font-weight:500; margin-top:6px; }
+
+  .result-header { display:flex; align-items:flex-start; gap:16px; padding-bottom:20px; border-bottom:1px solid var(--borda); margin-bottom:20px; }
+  .result-icon { width:48px; height:48px; flex-shrink:0; background:var(--azul-lt); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .result-meta { flex:1; }
+  .result-numero { font-size:12px; color:var(--muted); font-weight:500; letter-spacing:.5px; margin-bottom:4px; }
+  .result-titulo { font-family:'Playfair Display',serif; font-size:18px; color:var(--texto); margin-bottom:4px; }
+  .result-tribunal { font-size:13px; color:var(--muted); }
+  .status-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; margin-top:6px; }
+  .status-badge.ativo { background:#E8F5EE; color:var(--verde); }
+  .status-badge.suspenso { background:#FFF4E5; color:#B7600A; }
+  .status-badge.arquivado { background:#F2F3F5; color:var(--muted); }
+
+  .resumo-ia { background:linear-gradient(135deg,var(--azul-lt) 0%,#F0F5EE 100%); border-radius:12px; padding:20px; margin-bottom:20px; border-left:4px solid var(--azul); }
+  .resumo-ia-label { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--azul); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .resumo-ia-texto { font-size:15px; line-height:1.7; color:var(--texto); }
+
+  .movimentos-titulo { font-size:13px; font-weight:600; color:var(--muted); letter-spacing:.5px; text-transform:uppercase; margin-bottom:14px; }
+  .movimento { display:flex; gap:14px; padding:12px 0; border-bottom:1px solid var(--cinza); }
+  .movimento:last-child { border-bottom:none; }
+  .mov-data { font-size:11px; color:var(--muted); font-weight:500; white-space:nowrap; min-width:72px; padding-top:2px; }
+  .mov-dot { width:8px; height:8px; border-radius:50%; background:var(--azul); flex-shrink:0; margin-top:5px; }
+  .mov-conteudo { flex:1; }
+  .mov-nome { font-size:14px; font-weight:500; color:var(--texto); margin-bottom:2px; }
+  .mov-desc { font-size:13px; color:var(--muted); line-height:1.4; }
+
+  .erro-state { text-align:center; padding:28px 0; }
+  .erro-icon { font-size:40px; margin-bottom:12px; }
+  .erro-titulo { font-size:16px; font-weight:600; color:var(--erro); margin-bottom:6px; }
+  .erro-msg { font-size:14px; color:var(--muted); line-height:1.5; }
+
+  footer { text-align:center; padding:24px; font-size:12px; color:var(--muted); border-top:1px solid var(--borda); background:var(--branco); }
+  footer a { color:var(--azul); text-decoration:none; }
+
+  @media (max-width:520px) {
+    .hero { padding:36px 16px 56px; }
+    .card { padding:22px 18px; }
+    .input-wrap { flex-direction:column; }
+    .btn-buscar { width:100%; justify-content:center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <div class="logo-mark">Ca</div>
+    <div class="logo-text"><strong>André Cavichio</strong>Advogados</div>
+  </a>
+  <span class="header-tag">Portal do Cliente</span>
+</header>
+
+<div class="hero">
+  <h1>Acompanhe seu processo</h1>
+  <p>Consulte o andamento do seu processo em qualquer tribunal do Brasil, com explicações em linguagem simples.</p>
+</div>
+
+<main class="main">
+  <div class="card">
+    <div class="card-label">Consulta processual</div>
+    <h2>Digite o número do processo</h2>
+    <p class="sub">Funciona para TJSP, TJRJ, TJMG, TRF, STJ e todos os demais tribunais.</p>
+    <div class="input-wrap">
+      <input type="text" id="numProcesso" placeholder="0000000-00.0000.0.00.0000" maxlength="30" autocomplete="off" inputmode="numeric">
+      <button class="btn-buscar" id="btnBuscar" onclick="buscar()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Consultar
+      </button>
+    </div>
+    <p class="hint">Formato CNJ: <span>NNNNNNN-DD.AAAA.J.TT.OOOO</span></p>
+  </div>
+  <div id="resultado"></div>
+</main>
+
+<footer>
+  Portal do Cliente · <a href="#">André Cavichio Advogados</a> · OAB/SP 336.049 ·
+  Dúvidas? <a href="https://wa.me/5517999999999">Fale conosco</a>
+</footer>
+
+<script>
+document.getElementById('numProcesso').addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g,'').slice(0,20);
+  let f = '';
+  if (v.length > 0)  f = v.slice(0,7);
+  if (v.length > 7)  f += '-' + v.slice(7,9);
+  if (v.length > 9)  f += '.' + v.slice(9,13);
+  if (v.length > 13) f += '.' + v.slice(13,14);
+  if (v.length > 14) f += '.' + v.slice(14,16);
+  if (v.length > 16) f += '.' + v.slice(16,20);
+  e.target.value = f;
+});
+document.getElementById('numProcesso').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+
+async function buscar() {
+  const numero = document.getElementById('numProcesso').value.trim();
+  if (!numero || numero.replace(/\D/g,'').length < 15) {
+    document.getElementById('numProcesso').style.borderColor = '#C0392B';
+    setTimeout(() => document.getElementById('numProcesso').style.borderColor = '', 1200);
+    return;
+  }
+
+  const resultDiv = document.getElementById('resultado');
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = `<div class="card"><div class="loading-state"><div class="spinner"></div><p>Buscando no DataJud / CNJ…</p><p class="loading-step" id="loadingStep">Consultando todos os tribunais</p></div></div>`;
+  document.getElementById('btnBuscar').disabled = true;
+
+  try {
+    // Chama nosso backend no Vercel (mesmo domínio)
+    const res = await fetch(`/api/processo?numero=${encodeURIComponent(numero)}`);
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.erro || 'Erro ao consultar.');
+
+    renderResultado(data);
+  } catch (err) {
+    resultDiv.innerHTML = `<div class="card"><div class="erro-state"><div class="erro-icon">⚠️</div><div class="erro-titulo">Não foi possível consultar</div><div class="erro-msg">${err.message}</div></div></div>`;
+  } finally {
+    document.getElementById('btnBuscar').disabled = false;
+  }
+}
+
+function renderResultado(d) {
+  const statusInfo = detectarStatus(d.movimentos?.[0]?.nome || '');
+  const movHTML = (d.movimentos || []).map(m => `
+    <div class="movimento">
+      <div class="mov-data">${m.data}</div>
+      <div class="mov-dot"></div>
+      <div class="mov-conteudo">
+        <div class="mov-nome">${m.nome}</div>
+        ${m.desc ? `<div class="mov-desc">${m.desc}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('resultado').innerHTML = `
+    <div class="card">
+      <div class="result-header">
+        <div class="result-icon">⚖️</div>
+        <div class="result-meta">
+          <div class="result-numero">${d.numero}</div>
+          <div class="result-titulo">${d.classe}</div>
+          <div class="result-tribunal">${d.tribunal} · Ajuizado em ${d.dataAjuizamento}</div>
+          <span class="status-badge ${statusInfo.cls}">${statusInfo.icone} ${statusInfo.label}</span>
+        </div>
+      </div>
+      <div class="resumo-ia">
+        <div class="resumo-ia-label">✦ Resumo em linguagem simples</div>
+        <div class="resumo-ia-texto">${d.resumo}</div>
+      </div>
+      <div class="movimentos-titulo">Histórico de movimentos</div>
+      ${movHTML}
+    </div>`;
+}
+
+function detectarStatus(nome) {
+  const m = nome.toLowerCase();
+  if (m.includes('arquiv') || m.includes('extint') || m.includes('baixa'))
+    return { cls:'arquivado', icone:'●', label:'Arquivado' };
+  if (m.includes('suspend') || m.includes('sobrestado'))
+    return { cls:'suspenso', icone:'◐', label:'Suspenso' };
+  return { cls:'ativo', icone:'●', label:'Em andamento' };
+}
+</script>
+</body>
+</html>
